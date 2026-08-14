@@ -79,3 +79,55 @@ module "ecr" {
 
   common_tags = local.common_tags
 }
+
+module "alb" {
+  source = "../../modules/alb"
+
+  name_prefix = local.name_prefix
+
+  vpc_id = module.vpc.vpc_id
+
+  public_subnet_ids = module.vpc.public_subnet_ids
+
+  security_group_id = module.security_groups.alb_security_group_id
+
+  target_port = 3000
+
+  health_check_path = "/health"
+
+  common_tags = local.common_tags
+}
+
+module "ecs" {
+  source = "../../modules/ecs"
+
+  name_prefix = local.name_prefix
+
+  container_name = "backend"
+
+  container_port = 3000
+
+  cpu    = 256
+  memory = 512
+
+  desired_count = 1
+
+  image_uri = "${module.ecr.repository_url}:latest"
+
+  private_subnet_ids = module.vpc.private_app_subnet_ids
+
+  security_group_ids = [
+    module.security_groups.ecs_security_group_id
+  ]
+
+  execution_role_arn = module.iam.ecs_task_execution_role_arn
+
+  task_role_arn = module.iam.ecs_task_role_arn
+
+  target_group_arn = module.alb.target_group_arn
+
+  common_tags = local.common_tags
+}
+
+
+

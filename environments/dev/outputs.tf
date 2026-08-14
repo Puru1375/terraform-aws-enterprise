@@ -74,3 +74,43 @@ output "ecr_repository_url" {
   description = "ECR backend repository URL"
   value       = module.ecr.repository_url
 }
+
+output "ecs_cluster_id" {
+  description = "ECS cluster ID"
+  value       = module.ecs.cluster_id
+}
+
+output "ecs_cluster_arn" {
+  description = "ECS cluster ARN"
+  value       = module.ecs.cluster_arn
+}
+
+output "ecs_service_name" {
+  description = "ECS service name"
+  value       = module.ecs.service_name
+}
+
+output "ecs_task_definition_arn" {
+  description = "ECS task definition ARN"
+  value       = module.ecs.task_definition_arn
+}
+
+output "ecs_log_group_name" {
+  description = "ECS CloudWatch log group"
+  value       = module.ecs.log_group_name
+}
+
+output "alb_dns_name" {
+  description = "ALB DNS name"
+  value       = module.alb.alb_dns_name
+}
+
+output "alb_arn" {
+  description = "ALB ARN"
+  value       = module.alb.alb_arn
+}
+
+output "alb_target_group_arn" {
+  description = "ALB target group ARN"
+  value       = module.alb.target_group_arn
+}
