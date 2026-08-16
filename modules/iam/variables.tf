@@ -8,3 +8,8 @@ variable "common_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "database_secret_arn" {
+  description = "ARN of the database credentials secret"
+  type        = string
+}

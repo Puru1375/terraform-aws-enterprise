@@ -67,3 +67,12 @@ variable "target_group_arn" {
   description = "ARN of the ALB target group"
   type        = string
 }
+
+variable "container_secrets" {
+  description = "Secrets injected into the ECS container"
+  type = list(object({
+    name      = string
+    valueFrom = string
+  }))
+  default = []
+}

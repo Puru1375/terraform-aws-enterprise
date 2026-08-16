@@ -35,3 +35,33 @@ resource "aws_iam_role" "ecs_task" {
   tags = var.common_tags
 }
 
+resource "aws_iam_policy" "ecs_secrets" {
+  name = "${var.name_prefix}-ecs-secrets-policy"
+
+  description = "Allow ECS to retrieve application secrets"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Effect = "Allow"
+
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+
+        Resource = var.database_secret_arn
+      }
+    ]
+  })
+
+  tags = var.common_tags
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_secrets" {
+  role = aws_iam_role.ecs_task_execution.name
+
+  policy_arn = aws_iam_policy.ecs_secrets.arn
+}
+

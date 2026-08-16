@@ -55,6 +55,8 @@ resource "aws_ecs_task_definition" "app" {
         }
       ]
 
+      secrets = var.container_secrets
+
       logConfiguration = {
         logDriver = "awslogs"
 

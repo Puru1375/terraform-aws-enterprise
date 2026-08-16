@@ -114,3 +114,33 @@ output "alb_target_group_arn" {
   description = "ALB target group ARN"
   value       = module.alb.target_group_arn
 }
+
+output "rds_endpoint" {
+  description = "RDS PostgreSQL endpoint"
+  value       = module.rds.db_endpoint
+}
+
+output "rds_port" {
+  description = "RDS PostgreSQL port"
+  value       = module.rds.db_port
+}
+
+output "rds_instance_id" {
+  description = "RDS instance ID"
+  value       = module.rds.db_instance_id
+}
+
+output "rds_database_name" {
+  description = "Application database name"
+  value       = module.rds.db_name
+}
+
+output "database_secret_arn" {
+  description = "ARN of the database credentials secret"
+  value       = module.secrets_manager.database_secret_arn
+}
+
+output "cloudfront_domain_name" {
+  description = "CloudFront distribution domain name"
+  value       = module.frontend.cloudfront_domain_name
+}

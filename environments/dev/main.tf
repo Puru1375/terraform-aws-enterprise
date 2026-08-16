@@ -67,8 +67,9 @@ module "network_acls" {
 module "iam" {
   source = "../../modules/iam"
 
-  name_prefix = local.name_prefix
-  common_tags = local.common_tags
+  database_secret_arn = module.secrets_manager.database_secret_arn
+  name_prefix         = local.name_prefix
+  common_tags         = local.common_tags
 }
 
 module "ecr" {
@@ -125,6 +126,67 @@ module "ecs" {
   task_role_arn = module.iam.ecs_task_role_arn
 
   target_group_arn = module.alb.target_group_arn
+
+  container_secrets = [
+    {
+      name      = "DATABASE_URL"
+      valueFrom = "${module.secrets_manager.database_secret_arn}:DATABASE_URL::"
+    }
+  ]
+
+  common_tags = local.common_tags
+}
+
+module "rds" {
+  source = "../../modules/rds"
+
+  name_prefix = local.name_prefix
+
+  private_db_subnet_ids = module.vpc.private_db_subnet_ids
+
+  security_group_id = module.security_groups.rds_security_group_id
+
+  engine_version = var.rds_engine_version
+
+  instance_class = var.rds_instance_class
+
+  allocated_storage     = var.rds_allocated_storage
+  max_allocated_storage = var.rds_max_allocated_storage
+
+  db_name     = var.db_name
+  db_username = var.db_username
+  db_password = var.db_password
+
+  multi_az = var.rds_multi_az
+
+  backup_retention_period = var.rds_backup_retention_period
+
+  deletion_protection = var.rds_deletion_protection
+
+  skip_final_snapshot = var.rds_skip_final_snapshot
+
+  common_tags = local.common_tags
+}
+
+module "secrets_manager" {
+  source = "../../modules/secrets-manager"
+
+  name_prefix = local.name_prefix
+
+  db_username = var.db_username
+  db_password = var.db_password
+
+  db_host = module.rds.db_endpoint
+  db_port = module.rds.db_port
+  db_name = module.rds.db_name
+
+  common_tags = local.common_tags
+}
+
+module "frontend" {
+  source = "../../modules/frontend"
+
+  name_prefix = local.name_prefix
 
   common_tags = local.common_tags
 }
