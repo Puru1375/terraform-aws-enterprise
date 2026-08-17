@@ -200,7 +200,7 @@ module "github_oidc" {
   github_owner_id      = "138357143"
   github_repository_id = "1332203849"
 
-  github_branch = "develop"
+  github_branch = "main"
 
   role_name = "${local.name_prefix}-github-actions-role"
 
