@@ -188,6 +188,8 @@ module "frontend" {
 
   name_prefix = local.name_prefix
 
+  alb_dns_name = module.alb.alb_dns_name
+
   common_tags = local.common_tags
 }
 

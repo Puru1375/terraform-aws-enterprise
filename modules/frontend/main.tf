@@ -1,6 +1,8 @@
 resource "aws_s3_bucket" "frontend" {
   bucket = "${var.name_prefix}-frontend"
 
+  force_destroy = true
+
   tags = merge(
     var.common_tags,
     {
@@ -53,14 +55,46 @@ resource "aws_cloudfront_distribution" "frontend" {
 
   default_root_object = "index.html"
 
+  # ============================================================
+  # S3 ORIGIN
+  # ============================================================
+
   origin {
     domain_name = aws_s3_bucket.frontend.bucket_regional_domain_name
-    origin_id   = "S3-${aws_s3_bucket.frontend.id}"
+
+    origin_id = "S3-${aws_s3_bucket.frontend.id}"
 
     origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
   }
 
+  # ============================================================
+  # ALB ORIGIN
+  # ============================================================
+
+  origin {
+    domain_name = var.alb_dns_name
+
+    origin_id = "alb-backend"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+
+      origin_ssl_protocols = [
+        "TLSv1.2"
+      ]
+    }
+  }
+
+  # ============================================================
+  # DEFAULT BEHAVIOR
+  # React frontend → S3
+  # ============================================================
+
   default_cache_behavior {
+    target_origin_id = "S3-${aws_s3_bucket.frontend.id}"
+
     allowed_methods = [
       "GET",
       "HEAD",
@@ -71,8 +105,6 @@ resource "aws_cloudfront_distribution" "frontend" {
       "GET",
       "HEAD"
     ]
-
-    target_origin_id = "S3-${aws_s3_bucket.frontend.id}"
 
     viewer_protocol_policy = "redirect-to-https"
 
@@ -87,7 +119,49 @@ resource "aws_cloudfront_distribution" "frontend" {
     }
   }
 
-    custom_error_response {
+  # ============================================================
+  # API BEHAVIOR
+  # /api/* → ALB → ECS
+  # ============================================================
+
+  ordered_cache_behavior {
+    path_pattern = "/api/*"
+
+    target_origin_id = "alb-backend"
+
+    allowed_methods = [
+      "DELETE",
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "PATCH",
+      "POST",
+      "PUT"
+    ]
+
+    cached_methods = [
+      "GET",
+      "HEAD"
+    ]
+
+    viewer_protocol_policy = "redirect-to-https"
+
+    compress = true
+
+    forwarded_values {
+      query_string = true
+
+      cookies {
+        forward = "all"
+      }
+    }
+  }
+
+  # ============================================================
+  # SPA ERROR HANDLING
+  # ============================================================
+
+  custom_error_response {
     error_code            = 403
     response_code         = 200
     response_page_path    = "/index.html"
@@ -101,16 +175,29 @@ resource "aws_cloudfront_distribution" "frontend" {
     error_caching_min_ttl = 0
   }
 
+  # ============================================================
+  # RESTRICTIONS
+  # ============================================================
+
   restrictions {
     geo_restriction {
       restriction_type = "none"
     }
   }
 
+  # ============================================================
+  # HTTPS
+  # ============================================================
+
   viewer_certificate {
-  cloudfront_default_certificate = true
-  minimum_protocol_version       = "TLSv1.2_2021"
-}
+    cloudfront_default_certificate = true
+
+    minimum_protocol_version = "TLSv1.2_2021"
+  }
+
+  # ============================================================
+  # TAGS
+  # ============================================================
 
   tags = merge(
     var.common_tags,
