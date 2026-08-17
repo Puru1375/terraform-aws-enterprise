@@ -7,13 +7,10 @@ data "tls_certificate" "github" {
 }
 
 locals {
-  github_owner      = split("/", var.github_repository)[0]
-  github_repo       = split("/", var.github_repository)[1]
+  github_owner = split("/", var.github_repository)[0]
+  github_repo  = split("/", var.github_repository)[1]
 
-  github_oidc_subject = {
-    develop = "repo:${local.github_owner}@${var.github_owner_id}/${local.github_repo}@${var.github_repository_id}:ref:refs/heads/develop"
-    main    = "repo:${local.github_owner}@${var.github_owner_id}/${local.github_repo}@${var.github_repository_id}:ref:refs/heads/main"
-  }
+  github_oidc_subject = "repo:${local.github_owner}@${var.github_owner_id}/${local.github_repo}@${var.github_repository_id}:ref:refs/heads/${var.github_branch}"
 }
 
 resource "aws_iam_openid_connect_provider" "github" {
@@ -69,8 +66,7 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
       variable = "token.actions.githubusercontent.com:sub"
 
       values = [
-        local.github_oidc_subject.develop,
-        local.github_oidc_subject.main
+        local.github_oidc_subject
       ]
     }
   }

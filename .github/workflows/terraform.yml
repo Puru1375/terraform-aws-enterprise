@@ -117,3 +117,48 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -auto-approve -var-file=terraform-ci.tfvars
+
+  
+
+  # ==========================================
+  # PRODUCTION APPLY
+  # ==========================================
+  terraform-apply-prod:
+    name: Terraform Apply Production
+
+    needs: terraform
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    environment:
+      name: production
+
+    defaults:
+      run:
+        working-directory: environments/prod
+
+    env:
+      AWS_REGION: ap-south-1
+      TF_VAR_db_password: ${{ secrets.TF_DB_PASSWORD }}
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::984285320293:role/enterprise-dev-github-actions-role
+          aws-region: ap-south-1
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var-file=terraform-ci.tfvars
