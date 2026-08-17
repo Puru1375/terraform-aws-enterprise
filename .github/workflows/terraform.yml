@@ -17,12 +17,17 @@ permissions:
 
 jobs:
 
-  # ==========================================
-  # TERRAFORM CHECKS + PLAN
-  # ==========================================
-  terraform:
-    name: Terraform Checks
+  # =========================================================
+  # DEV TERRAFORM CHECK
+  # =========================================================
+
+  terraform-dev:
+    name: Terraform Dev Checks
     runs-on: ubuntu-latest
+
+    if: |
+      github.ref == 'refs/heads/develop' ||
+      github.base_ref == 'develop'
 
     defaults:
       run:
@@ -36,33 +41,12 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      # ------------------------------------------
-      # AWS OIDC
-      # ------------------------------------------
-      - name: Debug GitHub OIDC
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const token = await core.getIDToken('sts.amazonaws.com')
-            const payload = JSON.parse(
-              Buffer.from(token.split('.')[1], 'base64url').toString()
-            )
-
-            console.log('event_name:', payload.event_name)
-            console.log('repository:', payload.repository)
-            console.log('sub:', payload.sub)
-            console.log('aud:', payload.aud)
-            console.log('environment:', payload.environment)
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::984285320293:role/enterprise-dev-github-actions-role
           aws-region: ap-south-1
 
-      # ------------------------------------------
-      # TERRAFORM
-      # ------------------------------------------
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
 
@@ -78,13 +62,14 @@ jobs:
         run: terraform plan -no-color -var-file=terraform-ci.tfvars
 
 
-  # ==========================================
-  # DEV AUTOMATIC APPLY
-  # ==========================================
+  # =========================================================
+  # DEV APPLY
+  # =========================================================
+
   terraform-apply-dev:
     name: Terraform Apply Dev
 
-    needs: terraform
+    needs: terraform-dev
 
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
 
@@ -118,15 +103,60 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -auto-approve -var-file=terraform-ci.tfvars
 
-  
 
-  # ==========================================
+  # =========================================================
+  # PRODUCTION TERRAFORM CHECK
+  # =========================================================
+
+  terraform-prod:
+    name: Terraform Production Checks
+    runs-on: ubuntu-latest
+
+    if: |
+      github.ref == 'refs/heads/main' ||
+      github.base_ref == 'main'
+
+    defaults:
+      run:
+        working-directory: environments/prod
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::984285320293:role/enterprise-prod-github-actions-role
+          aws-region: ap-south-1
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        env:
+          TF_VAR_db_password: ${{ secrets.TF_DB_PASSWORD }}
+        run: terraform plan -no-color -var-file=terraform-ci.tfvars
+
+
+  # =========================================================
   # PRODUCTION APPLY
-  # ==========================================
+  # =========================================================
+
   terraform-apply-prod:
     name: Terraform Apply Production
 
-    needs: terraform
+    needs: terraform-prod
 
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
@@ -148,13 +178,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::984285320293:role/enterprise-dev-github-actions-role
+          role-to-assume: arn:aws:iam::984285320293:role/enterprise-prod-github-actions-role
           aws-region: ap-south-1
 
       - name: Terraform Init
