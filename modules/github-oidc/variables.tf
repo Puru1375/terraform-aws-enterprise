@@ -13,3 +13,13 @@ variable "common_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "github_owner_id" {
+  description = "GitHub owner ID"
+  type        = string
+}
+
+variable "github_repository_id" {
+  description = "GitHub repository ID"
+  type        = string
+}

@@ -196,7 +196,9 @@ module "frontend" {
 module "github_oidc" {
   source = "../../modules/github-oidc"
 
-  github_repository = "Puru1375/terraform-aws-enterprise"
+  github_repository    = "Puru1375/terraform-aws-enterprise"
+  github_owner_id      = "138357143"
+  github_repository_id = "1332203849"
 
   role_name = "${local.name_prefix}-github-actions-role"
 

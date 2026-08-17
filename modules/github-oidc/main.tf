@@ -6,6 +6,16 @@ data "tls_certificate" "github" {
   url = "https://token.actions.githubusercontent.com"
 }
 
+locals {
+  github_owner      = split("/", var.github_repository)[0]
+  github_repo       = split("/", var.github_repository)[1]
+
+  github_oidc_subject = {
+    develop = "repo:${local.github_owner}@${var.github_owner_id}/${local.github_repo}@${var.github_repository_id}:ref:refs/heads/develop"
+    main    = "repo:${local.github_owner}@${var.github_owner_id}/${local.github_repo}@${var.github_repository_id}:ref:refs/heads/main"
+  }
+}
+
 resource "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
 
@@ -59,8 +69,8 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
       variable = "token.actions.githubusercontent.com:sub"
 
       values = [
-        "repo:${var.github_repository}:ref:refs/heads/develop",
-        "repo:${var.github_repository}:ref:refs/heads/main"
+        local.github_oidc_subject.develop,
+        local.github_oidc_subject.main
       ]
     }
   }
