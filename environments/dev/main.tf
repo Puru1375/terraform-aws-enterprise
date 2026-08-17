@@ -193,5 +193,15 @@ module "frontend" {
   common_tags = local.common_tags
 }
 
+module "github_oidc" {
+  source = "../../modules/github-oidc"
+
+  github_repository = "Puru1375/terraform-aws-enterprise "
+
+  role_name = "${local.name_prefix}-github-actions-role"
+
+  common_tags = local.common_tags
+}
+
 
 
