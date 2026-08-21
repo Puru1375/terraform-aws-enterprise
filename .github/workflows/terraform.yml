@@ -134,6 +134,9 @@ jobs:
           role-to-assume: arn:aws:iam::984285320293:role/enterprise-prod-github-actions-role
           aws-region: ap-south-1
 
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
 
@@ -146,7 +149,16 @@ jobs:
       - name: Terraform Plan
         env:
           TF_VAR_db_password: ${{ secrets.TF_DB_PASSWORD }}
-        run: terraform plan -no-color -var-file=terraform-ci.tfvars
+        run: |
+          terraform plan \
+            -var-file=terraform-ci.tfvars \
+            -out=production.tfplan
+
+      - name: Upload Terraform plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-terraform-plan
+          path: environments/prod/production.tfplan
 
 
   # =========================================================
@@ -178,9 +190,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -193,5 +202,11 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
+      - name: Download Terraform plan
+        uses: actions/download-artifact@v4
+        with:
+          name: production-terraform-plan
+          path: environments/prod
+
       - name: Terraform Apply
-        run: terraform apply -auto-approve -var-file=terraform-ci.tfvars
+        run: terraform apply -auto-approve production.tfplan

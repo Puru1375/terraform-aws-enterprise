@@ -207,5 +207,17 @@ module "github_oidc" {
   common_tags = local.common_tags
 }
 
+module "app_github_oidc" {
+  source = "../../modules/app-github-oidc"
+
+  name_prefix = local.name_prefix
+
+  github_repository = "Puru1375/Odoo_x_SPIT_Online"
+  github_branch     = "develop"
+
+  common_tags = local.common_tags
+}
+
+
 
 

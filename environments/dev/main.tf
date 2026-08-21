@@ -72,6 +72,7 @@ module "iam" {
   common_tags         = local.common_tags
 }
 
+
 module "ecr" {
   source = "../../modules/ecr"
 
@@ -111,7 +112,7 @@ module "ecs" {
   cpu    = 256
   memory = 512
 
-  desired_count = 1
+  desired_count = var.desired_count
 
   image_uri = "${module.ecr.repository_url}:latest"
 
@@ -203,6 +204,17 @@ module "github_oidc" {
   github_branch = "develop"
 
   role_name = "${local.name_prefix}-github-actions-role"
+
+  common_tags = local.common_tags
+}
+
+module "app_github_oidc" {
+  source = "../../modules/app-github-oidc"
+
+  name_prefix = local.name_prefix
+
+  github_repository = "Puru1375/Odoo_x_SPIT_Online"
+  github_branch     = "develop"
 
   common_tags = local.common_tags
 }

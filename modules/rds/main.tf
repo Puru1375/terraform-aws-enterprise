@@ -43,7 +43,7 @@ resource "aws_db_instance" "main" {
 
   backup_retention_period = var.backup_retention_period
   backup_window           = var.backup_window
-  maintenance_window     = var.maintenance_window
+  maintenance_window      = var.maintenance_window
 
   auto_minor_version_upgrade = true
 
