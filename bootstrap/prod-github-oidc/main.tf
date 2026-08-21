@@ -59,7 +59,7 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
       variable = "token.actions.githubusercontent.com:sub"
 
       values = [
-        "repo:Puru1375/terraform-aws-enterprise:ref:refs/heads/main"
+        "repo:Puru1375@138357143/terraform-aws-enterprise@1332203849:ref:refs/heads/main"
       ]
     }
   }
