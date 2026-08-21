@@ -75,6 +75,12 @@ resource "aws_ecs_task_definition" "app" {
       Name = "${var.name_prefix}-task-definition"
     }
   )
+
+  lifecycle {
+    ignore_changes = [
+      container_definitions
+    ]
+  }
 }
 
 resource "aws_ecs_service" "app" {
@@ -110,4 +116,12 @@ resource "aws_ecs_service" "app" {
       Name = "${var.name_prefix}-service"
     }
   )
+
+  lifecycle {
+  ignore_changes = [
+    desired_count,
+    task_definition
+  ]
+}
+
 }

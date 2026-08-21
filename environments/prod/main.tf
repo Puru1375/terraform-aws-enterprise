@@ -72,7 +72,6 @@ module "iam" {
   common_tags         = local.common_tags
 }
 
-
 module "ecr" {
   source = "../../modules/ecr"
 
@@ -112,7 +111,7 @@ module "ecs" {
   cpu    = 256
   memory = 512
 
-  desired_count = var.desired_count
+  desired_count = 1
 
   image_uri = "${module.ecr.repository_url}:latest"
 
@@ -201,7 +200,7 @@ module "github_oidc" {
   github_owner_id      = "138357143"
   github_repository_id = "1332203849"
 
-  github_branch = "develop"
+  github_branch = "main"
 
   role_name = "${local.name_prefix}-github-actions-role"
 
@@ -218,6 +217,7 @@ module "app_github_oidc" {
 
   common_tags = local.common_tags
 }
+
 
 
 

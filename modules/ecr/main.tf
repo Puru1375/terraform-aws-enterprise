@@ -27,22 +27,6 @@ resource "aws_ecr_lifecycle_policy" "backend" {
       {
         rulePriority = 1
 
-        description = "Keep the latest 20 tagged images"
-
-        selection = {
-          tagStatus      = "tagged"
-          tagPrefixList  = ["v"]
-          countType      = "imageCountMoreThan"
-          countNumber    = 20
-        }
-
-        action = {
-          type = "expire"
-        }
-      },
-      {
-        rulePriority = 2
-
         description = "Remove untagged images after 7 days"
 
         selection = {

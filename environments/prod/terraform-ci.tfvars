@@ -1,0 +1,23 @@
+aws_region   = "ap-south-1"
+project_name = "enterprise"
+environment  = "prod"
+
+vpc_cidr = "10.20.0.0/16"
+
+rds_engine_version = "17"
+
+rds_instance_class = "db.t4g.micro"
+
+rds_allocated_storage     = 20
+rds_max_allocated_storage = 50
+
+db_name     = "enterprise"
+db_username = "enterprise_admin"
+
+rds_multi_az = false
+
+rds_backup_retention_period = 7
+
+rds_deletion_protection = true
+
+rds_skip_final_snapshot = false

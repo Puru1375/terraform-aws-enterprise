@@ -33,12 +33,6 @@ variable "vpc_cidr" {
   type        = string
 }
 
-variable "desired_count" {
-  description = "Desired number of ECS tasks"
-  type        = number
-  default     = 0
-}
-
 variable "rds_engine_version" {
   description = "PostgreSQL version"
   type        = string
